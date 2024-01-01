@@ -2,6 +2,7 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
   mode: "production",
@@ -36,7 +37,25 @@ module.exports = {
           },
         },
       },
-
+      //CSS
+      {
+        test: /\.css$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          {
+            loader: "css-loader",
+            options: { importLoaders: 1 },
+          },
+          {
+            loader: "postcss-loader",
+            options: {
+              postcssOptions: {
+                config: path.resolve(__dirname, "./postcss.config.js"),
+              },
+            },
+          },
+        ],
+      },
       // TODO: add other rules here
     ],
   },
@@ -48,5 +67,7 @@ module.exports = {
     new CopyPlugin({
       patterns: [{ from: "manifest.json", to: "manifest.json" }],
     }),
+    // write css file(s) to build folder
+    new MiniCssExtractPlugin({ filename: "css/[name].css" }),
   ],
 };

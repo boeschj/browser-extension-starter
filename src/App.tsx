@@ -1,3 +1,7 @@
 export default function App() {
-  return <div>Hello, world!</div>;
+  return (
+    <main className="text-red-500 flex justify-center items-center">
+      <div>Hello, world!</div>
+    </main>
+  );
 }
