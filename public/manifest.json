@@ -3,12 +3,12 @@
   "name": "My React Extension",
   "version": "1.0",
   "action": {
-    "default_popup": "index.html"
+    "default_popup": "options.html"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["bundle.js"]
+      "js": ["js/contentScript.bundle.js"]
     }
   ]
 }
