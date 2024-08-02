@@ -1,5 +1,5 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import PageTemplate from "../../Components/Templates/PageTemplate";
 import "../../Styles/index.css";
 
@@ -11,9 +11,8 @@ function OptionsPage() {
   );
 }
 
-ReactDOM.render(
+createRoot(document.getElementById("options-root") as HTMLElement).render(
   <React.StrictMode>
     <OptionsPage />
-  </React.StrictMode>,
-  document.getElementById("options-root")
+  </React.StrictMode>
 );
