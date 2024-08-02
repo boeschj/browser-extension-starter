@@ -1,5 +1,5 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import PageTemplate from "../../Components/Templates/PageTemplate";
 import "../../Styles/index.css";
 
@@ -11,9 +11,8 @@ function NewTabPage() {
   );
 }
 
-ReactDOM.render(
+createRoot(document.getElementById("newtab-root") as HTMLElement).render(
   <React.StrictMode>
     <NewTabPage />
-  </React.StrictMode>,
-  document.getElementById("newtab-root")
+  </React.StrictMode>
 );
