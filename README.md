@@ -34,7 +34,8 @@ To build for production:
 
 ### Project Structure
 
-src/
+/src
+.
 ├── Background/
 │ └── index.ts
 ├── ContentScript/
@@ -57,8 +58,6 @@ public/
 ├── options.html
 ├── popup.html
 └── newtab.html
-
-Flexible Entry Points
 
 ## Supported File Types
 
