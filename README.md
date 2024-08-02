@@ -34,6 +34,7 @@ To build for production:
 
 ### Project Structure
 
+```
 /src
 .
 ├── Background/
@@ -58,6 +59,7 @@ public/
 ├── options.html
 ├── popup.html
 └── newtab.html
+```
 
 ## Supported File Types
 
