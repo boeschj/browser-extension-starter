@@ -3,9 +3,5 @@ interface PageTemplateProps {
 }
 
 export default function PageTemplate({ children }: PageTemplateProps) {
-  return (
-    <main className="flex justify-center items-center h-full w-full">
-      {children}
-    </main>
-  );
+  return <main className="h-screen w-screen">{children}</main>;
 }
