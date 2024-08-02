@@ -11,7 +11,15 @@ const common = require("./webpack.common.js");
 const destPath = path.join(__dirname, "distribution");
 const buildPath = path.join(__dirname, "build");
 const nodeEnv = process.env.NODE_ENV || "development";
-const zipName = `extension-${nodeEnv}-${version}`;
+const browserEnv = process.env.TARGET_BROWSER;
+
+if (!browserEnv) {
+  throw new Error(
+    `TARGET_BROWSER env variable: ${process.env.TARGET_BROWSER} is not set to a supported option.`
+  );
+}
+
+const zipName = `browser-extension-${browserEnv}-${nodeEnv}-${version}`;
 
 module.exports = merge(common, {
   optimization: {
