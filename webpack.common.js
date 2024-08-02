@@ -8,6 +8,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const WextManifestWebpackPlugin = require("wext-manifest-webpack-plugin");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 
+//Webpack entry points
 const sourcePath = path.join(__dirname, "src");
 const MANIFEST_FILEPATH = path.join(__dirname, "public", "manifest.json");
 const PAGES_FILEPATH = path.join(sourcePath, "Pages");
@@ -15,20 +16,34 @@ const destPath = path.join(__dirname, "build");
 const templatePath = path.join(__dirname, "public", "pageTemplates");
 const nodeEnv = process.env.NODE_ENV || "development";
 
+//Tooling paths
+const postcssPath = path.resolve(__dirname, "./postcss.config.js");
+
 var assetFileExtensions = ["jpg", "jpeg", "png", "gif", "svg"];
 const fileExtensions = [".ts", ".tsx", ".js", ".jsx", ".json"];
 
+const entryPoints = {
+  manifest: MANIFEST_FILEPATH,
+  background: path.join(sourcePath, "Background", "index.ts"),
+  contentScript: path.join(sourcePath, "ContentScript", "index.ts"),
+  inject: path.join(sourcePath, "InjectedScript", "index.ts"),
+  options: path.join(PAGES_FILEPATH, "options", "index.tsx"),
+  newTab: path.join(PAGES_FILEPATH, "newTab", "index.tsx"),
+  popup: path.join(PAGES_FILEPATH, "popup", "index.tsx"),
+};
+
+// Filter out non-existent entry points
+const entry = Object.entries(entryPoints).reduce((acc, [key, value]) => {
+  if (fileExists(value)) {
+    acc[key] = value;
+  }
+  return acc;
+}, {});
+
 module.exports = {
-  mode: "production",
-  entry: {
-    manifest: MANIFEST_FILEPATH,
-    background: path.join(sourcePath, "Background", "index.ts"),
-    contentScript: path.join(sourcePath, "ContentScript", "index.ts"),
-    inject: path.join(sourcePath, "InjectedScript", "index.ts"),
-    options: path.join(PAGES_FILEPATH, "options", "index.tsx"),
-    newTab: path.join(PAGES_FILEPATH, "newTab", "index.tsx"),
-    popup: path.join(PAGES_FILEPATH, "popup", "index.tsx"),
-  },
+  devtool: nodeEnv === "development" ? "inline-source-map" : false,
+  mode: nodeEnv,
+  entry,
   output: {
     path: destPath,
     filename: "js/[name].bundle.js",
@@ -110,7 +125,7 @@ module.exports = {
             loader: "postcss-loader",
             options: {
               postcssOptions: {
-                config: path.resolve(__dirname, "./postcss.config.js"),
+                config: postcssPath,
               },
             },
           },
@@ -130,20 +145,15 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
-    // new HtmlWebpackPlugin({
-    //   // template: "index.html",
-    //   template: path.join(__dirname, "public", "pageTemplates", "index.html"),
-    // }),
-    // new CopyPlugin({
-    //   patterns: [{ from: "manifest.json", to: "manifest.json" }],
-    // }),
     // write css file(s) to build folder
-    new MiniCssExtractPlugin({ filename: "css/[name].css" }),
+    new MiniCssExtractPlugin({
+      filename: "css/[name].css",
+    }),
     // Plugin to not generate js bundle for manifest entry
     new WextManifestWebpackPlugin(),
     new ForkTsCheckerWebpackPlugin(),
     // environmental variables
-    new webpack.EnvironmentPlugin(["NODE_ENV"]),
+    new webpack.EnvironmentPlugin(["NODE_ENV", "TARGET_BROWSER"]),
     // delete previous build files
     new CleanWebpackPlugin({
       cleanOnceBeforeBuildPatterns: [
@@ -158,7 +168,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: path.join(templatePath, "options.html"),
       inject: "body",
-      chunks: ["options", "vendors"],
+      chunks: ["options"],
       hash: true,
       filename: "options.html",
     }),
@@ -167,7 +177,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: path.join(templatePath, "newtab.html"),
       inject: "body",
-      chunks: ["newtab", "vendors"],
+      chunks: ["newtab"],
       hash: true,
       filename: "newtab.html",
     }),
@@ -176,25 +186,15 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: path.join(templatePath, "popup.html"),
       inject: "body",
-      chunks: ["popup", "vendors"],
+      chunks: ["popup"],
       hash: true,
       filename: "popup.html",
     }),
 
-    // write css file(s) to build folder
-    new MiniCssExtractPlugin({ filename: "css/[name].css" }),
-
-    //TODO
     // copy the favicon manually as webpack thinks it is unused and removes it during tree shaking
-    // new CopyWebpackPlugin({
-    //   patterns: [
-    //     { from: "src/assets/images/Fire.png", to: "assets/images" },
-    //     {
-    //       from: "src/assets/images/fire-injected-wallet-ui.png",
-    //       to: "assets/images",
-    //     },
-    //   ],
-    // }),
+    new CopyPlugin({
+      patterns: [{ from: "public/favicon.png", to: "assets/images" }],
+    }),
 
     // Extract common dependencies into a separate vendor bundle
     new webpack.optimize.SplitChunksPlugin(),
@@ -207,7 +207,6 @@ module.exports = {
     mergeDuplicateChunks: true,
     removeEmptyChunks: true,
     providedExports: true,
-
     runtimeChunk: {
       name: (entrypoint) => {
         if (
@@ -224,30 +223,7 @@ module.exports = {
     splitChunks: {
       chunks(chunk) {
         return !["background", "contentScript", "inject"].includes(chunk.name);
-        // return chunk.name !== 'background';
       },
-      cacheGroups: {
-        // disable webpack's default cacheGroup
-        default: false,
-        // disable webpack's default vendor cacheGroup
-        vendors: false,
-        // Create a framework bundle that contains React libraries
-        // They hardly change so we bundle them together to improve
-        framework: {},
-        // Big modules that are over 160kb are moved to their own file to
-        // optimize browser parsing & execution
-        lib: {},
-        // All libraries that are used on all pages are moved into a common chunk
-        commons: {},
-        // When a module is used more than once we create a shared bundle to save user's bandwidth
-        shared: {},
-        // All CSS is bundled into one stylesheet
-        styles: {},
-      },
-      // Keep maximum initial requests to 25
-      maxInitialRequests: 25,
-      // A chunk should be at least 20kb before using splitChunks
-      minSize: 20000,
     },
   },
 };

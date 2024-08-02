@@ -1,14 +1,41 @@
 {
-  "manifest_version": 3,
   "name": "My React Extension",
+  "description": "A boilerplate template for React-based browser extensions!",
   "version": "1.0",
-  "action": {
-    "default_popup": "options.html"
+  "__chrome__manifest_version": 3,
+  "__firefox__manifest_version": 2,
+  "__chrome__action": {
+    "default_popup": "options.html",
+    "default_icon": {
+      "128": "assets/images/favicon.png"
+    }
+  },
+  "__firefox__browser_action": {
+    "default_popup": "options.html",
+    "default_icon": {
+      "128": "assets/images/favicon.png"
+    }
+  },
+  "icons": {
+    "128": "assets/images/favicon.png"
+  },
+  "__chrome__background": {
+    "service_worker": "js/background.bundle.js"
+  },
+  "__firefox__background": {
+    "scripts": ["js/background.bundle.js"]
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
       "js": ["js/contentScript.bundle.js"]
     }
-  ]
+  ],
+  "__chrome__web_accessible_resources": [
+    {
+      "resources": ["js/inject.bundle.js"],
+      "matches": ["http://*/*", "https://*/*"]
+    }
+  ],
+  "__firefox__web_accessible_resources": ["js/inject.bundle.js"]
 }
