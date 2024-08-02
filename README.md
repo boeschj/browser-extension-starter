@@ -36,7 +36,6 @@ To build for production:
 
 ```
 /src
-.
 ├── Background/
 │ └── index.ts
 ├── ContentScript/
