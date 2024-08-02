@@ -7,6 +7,9 @@ const CopyPlugin = require("copy-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const WextManifestWebpackPlugin = require("wext-manifest-webpack-plugin");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
+const fs = require("fs");
+
+const fileExists = (filePath) => fs.existsSync(filePath);
 
 //Webpack entry points
 const sourcePath = path.join(__dirname, "src");
@@ -19,11 +22,12 @@ const nodeEnv = process.env.NODE_ENV || "development";
 //Tooling paths
 const postcssPath = path.resolve(__dirname, "./postcss.config.js");
 
-var assetFileExtensions = ["jpg", "jpeg", "png", "gif", "svg"];
+//Suppprted file extensions
+const assetFileExtensions = ["jpg", "jpeg", "png", "gif", "svg"];
 const fileExtensions = [".ts", ".tsx", ".js", ".jsx", ".json"];
 
-const entryPoints = {
-  manifest: MANIFEST_FILEPATH,
+//All file entry points
+const optionalEntryPoints = {
   background: path.join(sourcePath, "Background", "index.ts"),
   contentScript: path.join(sourcePath, "ContentScript", "index.ts"),
   inject: path.join(sourcePath, "InjectedScript", "index.ts"),
@@ -32,18 +36,24 @@ const entryPoints = {
   popup: path.join(PAGES_FILEPATH, "popup", "index.tsx"),
 };
 
-// Filter out non-existent entry points
-const entry = Object.entries(entryPoints).reduce((acc, [key, value]) => {
-  if (fileExists(value)) {
-    acc[key] = value;
-  }
-  return acc;
-}, {});
+//Allow devs to delete boilerplate files they don't need
+const entry = Object.entries(optionalEntryPoints).reduce(
+  (acc, [key, value]) => {
+    if (fileExists(value)) {
+      acc[key] = value;
+    }
+    return acc;
+  },
+  {}
+);
 
 module.exports = {
   devtool: nodeEnv === "development" ? "inline-source-map" : false,
   mode: nodeEnv,
-  entry,
+  entry: {
+    manifest: MANIFEST_FILEPATH,
+    ...entry,
+  },
   output: {
     path: destPath,
     filename: "js/[name].bundle.js",
